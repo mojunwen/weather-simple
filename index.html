@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>和风天气预报</title>
+    <link rel="stylesheet" href="http://apps.bdimg.com/libs/bootstrap/3.3.4/css/bootstrap.css">
+
+    <style>
+        .w {
+            width: 300;
+        }
+    </style>
+</head>
+<body>
+    <div class="container w">
+        <div class="row">
+            <h1>和风天气demo</h1>
+            <form action="" id="weatherForm">
+                <div class="form-group">
+                    <label for="city">输入城市</label>
+                    <input class="form-contral" type="text" id="city" value="包头">
+                </div>
+                <div class="form-froup">
+                    <label for="methods">选择方法</label>
+                    
+                </div>
+                <button id="seachBtn" class="btn btn-success" type="button">查询</button>
+            </form>
+        </div>
+        <div class="row">
+            <div id="contentBox"></div>
+        </div>
+    </div>
+
+    <div class="hide" id="templateNow">
+        <div class="row">
+            <h2 data-key="basic.city"></h2>
+            <span>温度：</span>
+            <label data-key="now.tmp"></label>
+            <span>°</span>
+            <label>更新时间：</label>
+            <span data-key="basic.update.loc"></span>
+        </div>
+    </div>
+    <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script>
+
+        $(function(){
+            var apiUrl = 'https://free-api.heweather.com/v5/',
+                mykey  = '&key=146ba7b820344558a47496c09c16ff6d',
+                nowFunc= 'now',
+                defCity   = '?city=baotou',
+                fullUrl= apiUrl + nowFunc + city + mykey;
+                
+            function getNowData(city){
+                var _data ;
+                $.ajax({
+                    type: 'get',
+                    url : apiUrl + nowFunc + city + mykey,
+                    async: false,
+                    success: function(data){
+                        _data = data;
+                    }
+                });
+                return _data;
+            }
+            
+            function tempRend(templateName, obj){
+                var $newHtml = $(templateName).clone();
+
+                $newHtml.find('[data-key]').each(function(i,item){
+                    var _key = item.attributes['data-key'].nodeValue;
+                    var _arr = _key.split('.');
+                    switch(_arr.length){
+                        case 1: var _val = obj[_key];break;
+                        case 2: var _val = obj[_arr[0]][_arr[1]];break;
+                        case 3: var _val = obj[_arr[0]][_arr[1]][_arr[2]];break;
+                    }
+                    $(item).text(_val);
+                });
+                $('#contentBox').append($newHtml);
+            }
+
+            $('#weatherForm').on('click', '#seachBtn', function()
+            {
+                var cityName = $('#city').val();
+                var weatherData = getNowData('?city=' + cityName);
+                
+                if(weatherData){
+                    tempRend('#templateNow div.row', weatherData.HeWeather5[0]);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
