@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="http://apps.bdimg.com/libs/bootstrap/3.3.4/css/bootstrap.css">
 
     <style>
-        .w {
+        div.container.w {
             width: 300;
         }
     </style>
@@ -45,6 +45,7 @@
         </div>
     </div>
     <script src="http://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script src="http://apps.bdimg.com/libs/layer/2.1/layer.js"></script>
     <script>
 
         $(function(){
@@ -55,6 +56,9 @@
                 fullUrl= apiUrl + nowFunc + city + mykey;
                 
             function getNowData(city){
+                var index = layer.load(1, {
+                    shade: [0.1,'#fff'] //0.1透明度的白色背景
+                });
                 var _data ;
                 $.ajax({
                     type: 'get',
@@ -62,6 +66,7 @@
                     async: false,
                     success: function(data){
                         _data = data;
+                        // layer.close(index);
                     }
                 });
                 return _data;
@@ -71,16 +76,36 @@
                 var $newHtml = $(templateName).clone();
 
                 $newHtml.find('[data-key]').each(function(i,item){
-                    var _key = item.attributes['data-key'].nodeValue;
-                    var _arr = _key.split('.');
-                    switch(_arr.length){
-                        case 1: var _val = obj[_key];break;
-                        case 2: var _val = obj[_arr[0]][_arr[1]];break;
-                        case 3: var _val = obj[_arr[0]][_arr[1]][_arr[2]];break;
-                    }
-                    $(item).text(_val);
+                    // 第一种方法：笨办法
+                    // var _key = item.attributes['data-key'].nodeValue;
+                    
+                    // var _arr = _key.split('.');
+                    // switch(_arr.length){
+                    //     case 1: var _val = obj[_key];break;
+                    //     case 2: var _val = obj[_arr[0]][_arr[1]];break;
+                    //     case 3: var _val = obj[_arr[0]][_arr[1]][_arr[2]];break;
+                    // }
+                    
+                    // console.log(a(obj,_key));
+                    // 第三种方法：evel 大魔王。
+                    $(item).text(eval('obj.' + item.attributes['data-key'].nodeValue));
                 });
                 $('#contentBox').append($newHtml);
+            }
+            // 第二种方法：迭代器取值
+            function a(obj,key){
+                var _arr = key.split('.'),
+                    i = 0;
+                function getObjData(obj,key){
+                    if(typeof(obj[key]) === 'object'){
+                        i++;
+                        return getObjData(obj[key], _arr[i]);
+                    }else {
+                        return obj[key];
+                    }
+                }
+                
+                return getObjData(obj,_arr[i]);
             }
 
             $('#weatherForm').on('click', '#seachBtn', function()
